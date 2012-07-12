@@ -1,4 +1,4 @@
-twoveils
+TwoEvils
 ========
 
-twoevils import and management
+These scripts are used to import and manage the twoevils data.
