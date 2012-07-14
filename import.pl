@@ -68,14 +68,16 @@ sub loadPlayers($) {
 
     while (my $tmp = shift @players) {
         # Try to sanitise the date
-        my $fixeddate = 'Unknown';
-        if ($tmp->{'dateadded'} =~ /(\d+)-(\d+)-(\d+)/) {
-            # OK, this looks like a date. They're MDY, so lets fix that.
-            my ($m, $d, $y) = ($1, $2, $3);
-            # Sometimes they're two digit, sometimes they're three digit.
-            if ($y < 100) { $y = $y + 2000 };
-            $fixeddate = sprintf('%04d', $y)."-".sprintf('%02d', $m)."-".sprintf('%02d', $d);
-        }
+        # They've fixed it. Woot.
+        my $fixeddate = $tmp->{'dateadded'};
+#        if ($tmp->{'dateadded'} =~ /(\d+)-(\d+)-(\d+)/) {
+#            print "I'm looking at ".$tmp->{'dateadded'}."\n";
+#            # OK, this looks like a date. They're MDY, so lets fix that.
+#            my ($m, $d, $y) = ($1, $2, $3);
+#            # Sometimes they're two digit, sometimes they're three digit.
+#            if ($y < 100) { $y = $y + 2000 };
+#            $fixeddate = sprintf('%04d', $y)."-".sprintf('%02d', $m)."-".sprintf('%02d', $d);
+#        }
 
         # Remove possible XSS issues. Yes, I'm paranoid.
         foreach $var (qw(name league dateadded number)) {
