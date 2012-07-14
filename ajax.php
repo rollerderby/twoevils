@@ -83,14 +83,14 @@ if ($_REQUEST['action'] === 'getchar') {
     # Right. Now, lets add the next three on the end.
     if ($page == $pages) {
         # Already there
-    } elseif ($page+3 > $pages) {
+    } elseif ($page+3 >= $pages) {
         $parr = array_merge($parr, range($page+1, $pages));
     } else {
         $parr = array_merge($parr, range($page+1, $page+4));
     }
 
     # OK, so now we have 9 10 11 /12/ 13 14 15. Lets add the next 10 down.
-    if ($page <= 3) {
+    if ($page <= 4) {
         # Already there
     } elseif ($page <= 13) {
         $parr = array_merge(array(1), $parr);
@@ -99,14 +99,14 @@ if ($_REQUEST['action'] === 'getchar') {
     }
 
     # And the next 10 up
-    if ($page == $pages || $page+3 > $pages) {
+    if ($page == $pages || $page+4 > $pages) {
         # Already there
     } else {
-        $next = $page+3 -($page+3)%10 + 10;
+        $next = $page+4 -($page+4)%10 + 10;
         if ($next > $pages) {
             $parr = array_merge($parr, array($pages));
         } else {
-            $parr = array_merge($parr, array($page+3 -($page+3)%10 + 10));
+            $parr = array_merge($parr, array($next));
         }
     }
 
