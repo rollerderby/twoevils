@@ -9,9 +9,13 @@ header('Content-type: application/json');
 $dbhost = $dbname = $dbuser = $dbpw = 'undefined';
 $all = file("../wp-config.php");
 
-if (!isset($_REQUEST['action'])) { $_REQUEST['action'] = 'search'; }
+# Results per page
+$rpp = 50;
+
+if (!isset($_REQUEST['action'])) { $_REQUEST['action'] = 'getchar'; }
 if (!isset($_REQUEST['char'])) { $_REQUEST['char'] = "A"; }
 if (!isset($_REQUEST['name'])) { $_REQUEST['name'] = "eddi"; }
+if (!isset($_REQUEST['page'])) { $_REQUEST['page'] = "1"; }
 
 foreach($all as $line_num => $line) {
     if (preg_match("/define.'DB_NAME', '(.+)'/", $line, $m)) { $dbname = $m[1]; }
@@ -31,15 +35,38 @@ if ($_REQUEST['action'] === 'list') {
 }
 
 if ($_REQUEST['action'] === 'getchar') {
+    if (!is_numeric($_REQUEST['page'])) { 
+        # Dear customer, fuck off. Sincerely, Rob.
+        print "noint from ".$_REQUEST['page']."\n";
+        exit;
+    }
+    $page = $_REQUEST['page'] - 1;
     $char = urldecode($_REQUEST['char']);
     if (strlen($char) != 1) {
         exit;
     }
-    $sql = "select * from rollerderby_players where derbyname like :char";
+    # Get how many rows there are
+    $sql = "select count(derbyname) from rollerderby_players where derbyname like :char";
+    $query = $dbh->prepare($sql);
+    $query->execute(array( ":char" => $char."%"));
+    $header = $query->fetchAll(PDO::FETCH_COLUMN, 0);
+
+    # Now, get the page of results..
+    $start = (int) $page*$rpp;
+    $end = (int) (($page+1)*$rpp)-1;
+    $sql = "select * from rollerderby_players where derbyname like :char limit $start, $end";
     $query = $dbh->prepare($sql);
     $query->execute(array( ":char" => $char."%"));
     $data = $query->fetchAll(PDO::FETCH_CLASS);
-    print @json_encode($data); /* There is LOTS of bad UTF8 data in the scrape.. */
+    # How many pages do we need?
+    $pages = (int) $header[0]/$rpp;
+    if ($pages === 0) {
+        # Don't mention the war!
+        print @json_encode(array("size" => $header[0], "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
+        exit;
+    }
+    $parr = range(1, $pages);
+    print @json_encode(array("size" => $header[0], "pages" => $parr, "thispage" => $page+1, "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
     exit;
 }
 

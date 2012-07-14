@@ -39,6 +39,9 @@
         .clicks { width: 100%; border: 0; padding: 0; margin: 0 }
         .h { cursor:pointer }
         .h:hover { background-color: #ccddee; }
+        .pagejump { padding-left: 1em; color: red; cursor: pointer}
+        .pagejump:hover { background-color: #ccddee; } 
+        #spage { text-decoration: underline }
 
 </style>
 </head>
@@ -79,23 +82,34 @@ $(document).ready(function(){
               newhtml = newhtml + '<td class="h" data-value="'+encodeURIComponent(y)+'">'+y+'</td>';
           })
           $("#initials").html(newhtml+"</tr></td></table>");
-          $(".h").click(function() {loadcontent($(this).data("value"))});
+          $(".h").click(function() {loadcontent($(this).data("value"), 1)});
        }
    });
 });
 
-function loadcontent(x) {
+function loadcontent(x, page) {
     $("#content").html("<span id='loading'>Loading...</span>");
-    $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x),
+    $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x)+"&page="+page,
         success: function(data) { 
-            var newhtml="<table>\n";
-            $.each(data, function(x, y) {
+            var newhtml="<div id='pageselect'>"+data['size']+" Results. ";
+            if (typeof data['pages'] != 'undefined') {
+                $.each(data['pages'], function(x, y) {
+                    if (data['thispage'] == y) {
+                        newhtml = newhtml + '<span class=pagejump id=spage data-value="'+y+'">'+y+'&nbsp;</span>';
+                    } else {
+                        newhtml = newhtml + '<span class=pagejump data-value="'+y+'">'+y+'&nbsp;</span>';
+                    }
+                });
+            }
+            newhtml = newhtml + "</div><table>\n";
+            $.each(data['data'], function(x, y) {
                 newhtml = newhtml + "<tr><td>" + y['derbyname'] + "</td><td>" + y['number'] + "</td>";
                 newhtml = newhtml + "<td>" + y['dateadded'] + "</td><td>" + y['league'] + "</td><td>";
                 newhtml = newhtml + y['registrar'] + "</td></tr>\n";
             });
             newhtml = newhtml + "</table>";
             $("#content").html(newhtml);
+            $(".pagejump").click(function() {loadcontent(x, $(this).data("value"))});
         }
     });
 }
