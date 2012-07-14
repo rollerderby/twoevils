@@ -84,7 +84,7 @@ function loadcontent(x, page) {
     $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x)+"&page="+page,
         success: function(data) { 
             console.log("I'm here");
-            var newhtml="<div id='pageselect'>"+data['size']+" Results. ";
+            var newhtml="<div id='pageselect'>"+data['size']+" Results, "+data['pagecount']+" pages.";
             if (typeof data['pages'] != 'undefined') {
                 $.each(data['pages'], function(x, y) {
                     if (data['thispage'] == y) {

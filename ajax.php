@@ -77,7 +77,7 @@ if ($_REQUEST['action'] === 'getchar') {
         if ($page <= 3) {
              $parr = array_merge(range(1, $page-1), $parr);
         } else {
-             $parr = array_merge(range($page-2, $page-1), $parr);
+             $parr = array_merge(range($page-3, $page-1), $parr);
         }
     }
     # Right. Now, lets add the next three on the end.
@@ -92,7 +92,7 @@ if ($_REQUEST['action'] === 'getchar') {
     # OK, so now we have 9 10 11 /12/ 13 14 15. Lets add the next 10 down.
     if ($page <= 3) {
         # Already there
-    } elseif ($page <= 14) {
+    } elseif ($page <= 13) {
         $parr = array_merge(array(1), $parr);
     } else {
         $parr = array_merge(array(($page-4) - (($page - 4)%10)), $parr);
@@ -110,7 +110,7 @@ if ($_REQUEST['action'] === 'getchar') {
         }
     }
 
-    print @json_encode(array("size" => $header[0], "pages" => $parr, "thispage" => $page, "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
+    print @json_encode(array("size" => $header[0], "pages" => $parr, "pagecount" => $pages, "thispage" => $page, "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
     exit;
 }
 
