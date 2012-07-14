@@ -9,8 +9,9 @@ header('Content-type: application/json');
 $dbhost = $dbname = $dbuser = $dbpw = 'undefined';
 $all = file("../wp-config.php");
 
-if (!isset($_REQUEST['action'])) { $_REQUEST['action'] = 'getchar'; }
-if (!isset($_REQUEST['char'])) { $_REQUEST['char'] = "'"; }
+if (!isset($_REQUEST['action'])) { $_REQUEST['action'] = 'search'; }
+if (!isset($_REQUEST['char'])) { $_REQUEST['char'] = "A"; }
+if (!isset($_REQUEST['name'])) { $_REQUEST['name'] = "eddi"; }
 
 foreach($all as $line_num => $line) {
     if (preg_match("/define.'DB_NAME', '(.+)'/", $line, $m)) { $dbname = $m[1]; }
@@ -42,16 +43,15 @@ if ($_REQUEST['action'] === 'getchar') {
     exit;
 }
 
-/* We should have the stuff typed in _REQUEST['term']. */
 if ($_REQUEST['action'] === 'search') {
-    if(isset($_REQUEST['term'])) {
-        $r = $_REQUEST['term'];
-        if (preg_match('/>|</', $r)) {
-            print json_encode(array('Error. Invalid Chars'));
-            exit;
-        }
-        print json_encode(array("I have $r"));
-    }
+    $char = $_REQUEST['name'];
+    $sql = "select * from rollerderby_players where derbyname like concat('%', :char, '%')";
+    $query = $dbh->prepare($sql);
+    $query->execute(array( ":char" => $char));
+    $data = $query->fetchAll(PDO::FETCH_CLASS);
+    print @json_encode($data); /* There is LOTS of bad UTF8 data in the scrape.. */
+    exit;
 }
   
+
 ?>

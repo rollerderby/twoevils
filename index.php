@@ -66,22 +66,26 @@ $(document).ready(function(){
         if($(this).val() == ''){ $('#input-prompt-' + i).show(); }
       });
     });
-    $('#derbyname').autocomplete({ source: "http://rollerder.by/twoevils/ajax.php?action=search&" });
-    $.ajax({ url: "ajax.php?action=list",
-        success: function(data) { 
-            var newhtml = "<table><tr>"
-            $("#initials").html("<table><tr>");
-            $.each(data, function(x,y) {
-                newhtml = newhtml + '<td class="h" data-value="'+encodeURIComponent(y)+'">'+y+'</td>';
-            })
-            $("#initials").html(newhtml+"</tr></td></table>");
-            $(".h").click(function() {loadcontent($(this).data("value"))});
-        }
-    });
+   $('#derbyname').keyup(function() { 
+       clearTimeout($.data(this, 'timer'));
+       var wait = setTimeout(function() { searchname($("#derbyname").val()) }, 500);
+       $(this).data('timer', wait);
+   });
+   $.ajax({ url: "ajax.php?action=list",
+       success: function(data) { 
+          var newhtml = "<table><tr>"
+          $("#initials").html("<table><tr>");
+          $.each(data, function(x,y) {
+              newhtml = newhtml + '<td class="h" data-value="'+encodeURIComponent(y)+'">'+y+'</td>';
+          })
+          $("#initials").html(newhtml+"</tr></td></table>");
+          $(".h").click(function() {loadcontent($(this).data("value"))});
+       }
+   });
 });
 
 function loadcontent(x) {
-    $("#content").html("<spann id='loading'>Loading...</span>");
+    $("#content").html("<span id='loading'>Loading...</span>");
     $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x),
         success: function(data) { 
             var newhtml="<table>\n";
@@ -95,6 +99,23 @@ function loadcontent(x) {
         }
     });
 }
+
+function searchname(x) {
+    $("#content").html("<span id='loading'>Loading...</span>");
+    $.ajax({ url: "ajax.php?action=search&name="+encodeURIComponent(x),
+        success: function(data) { 
+            var newhtml="<table>\n";
+            $.each(data, function(x, y) {
+                newhtml = newhtml + "<tr><td>" + y['derbyname'] + "</td><td>" + y['number'] + "</td>";
+                newhtml = newhtml + "<td>" + y['dateadded'] + "</td><td>" + y['league'] + "</td><td>";
+                newhtml = newhtml + y['registrar'] + "</td></tr>\n";
+            });
+            newhtml = newhtml + "</table>";
+            $("#content").html(newhtml);
+        }
+    });
+}
+
 
 
 </script>
