@@ -38,21 +38,59 @@ open (FH, "teams.html");
 my @teams;
 while (<FH>) {
     if (/^<tr class=.trc..><td>(.+)<.td><td>(.+)<.td><td>(.+)<.td><td>(.+)<.td><td>(.+)<.td><td>(.+)<.td><td>(.+)<.td><.tr>/) {
-        push @teams, {"league", $1, "teamname", $2, "dateadded", $3, "teamtype", $4, "misc", $5};
+        push @teams, {"league", $1, "teamname", $2, "dateadded", $3, "teamtype", $4, "misc", $5, "registrar", "twoevils"};
     }
 }
 close FH;
-&loadTwoEvilsTeams(@teams);
+open (FH, "rollergirls.html");
+my @players;
+while (<FH>) {
+    if (/^<tr class=.trc..><td>(.+)<.td><td>(.+)<.td><td>(.+)<.td><td>(.+)<.td><.tr>/) {
+        push @players, {"name", $1, "number", $2, "dateadded", $3, "league", $4, "registrar", "twoevils"};
+    }
+}
 
+&loadPlayers(@players);
+&loadTeams(@teams);
 
+sub loadPlayers($) {
+    my @players = @_;
 
-sub loadTwoEvilsTeams($) {
+    # Drop all the player names
+    $dbh->do('delete from rollerderby_players');
+
+    my $sth = $dbh->prepare('insert into rollerderby_players (derbyname, league, dateadded, number, registrar) values (?, ?, ?, ?, ?)') 
+        or die $dbh->errstr;
+
+    while (my $tmp = shift @players) {
+        # Try to sanitise the date
+        my $fixeddate = 'Unknown';
+        if ($tmp->{'dateadded'} =~ /(\d+)-(\d+)-(\d+)/) {
+            # OK, this looks like a date. They're MDY, so lets fix that.
+            my ($m, $d, $y) = ($1, $2, $3);
+            # Sometimes they're two digit, sometimes they're three digit.
+            if ($y < 100) { $y = $y + 2000 };
+            $fixeddate = sprintf('%04d', $y)."-".sprintf('%02d', $m)."-".sprintf('%02d', $d);
+        }
+
+        # Remove possible XSS issues. Yes, I'm paranoid.
+        foreach $var (qw(name league dateadded number)) {
+            $tmp->{$var} =~ s/(<|>|&gt;|&lt;)//g;
+        }
+        # That appears to be it. Load it in!
+        $sth->execute($tmp->{'name'}, $tmp->{'league'}, $fixeddate, $tmp->{'number'}, $tmp->{'registrar'});
+    }
+}
+
+sub loadTeams($) {
     my @teams = @_;
 
-    # Dump any data we previously had for twoevils
-    $dbh->do('delete from rollerderby_teams where registrar="twoevils"');
-    my $sth = $dbh->prepare('insert into rollerderby_teams (league, teamname, dateadded, teamtype, misc, registrar) values (?, ?, ?, ?, ?, "twoevils")') 
+    # Dump any data we previously had.
+    $dbh->do('delete from rollerderby_teams');
+
+    my $sth = $dbh->prepare('insert into rollerderby_teams (league, teamname, dateadded, teamtype, misc, registrar) values (?, ?, ?, ?, ?, ?)') 
         or die $dbh->errstr;
+
     while (my $tmp = shift @teams) {
 
         # Try to sanitise the date
@@ -88,10 +126,10 @@ sub loadTwoEvilsTeams($) {
 
         # Remove possible XSS issues. Yes, I'm paranoid.
         foreach $var (qw(league teamname teamtype misc)) {
-            $tmp->{$var} =~ s/(<|>)//g;
+            $tmp->{$var} =~ s/(<|>|&gt;|&lt;)//g;
         }
         # That appears to be it. Load it in!
-        $sth->execute($tmp->{'league'}, $tmp->{'teamname'}, $fixeddate, $tmp->{'teamtype'}, $tmp->{'misc'});
+        $sth->execute($tmp->{'league'}, $tmp->{'teamname'}, $fixeddate, $tmp->{'teamtype'}, $tmp->{'misc'}, $tmp->{'registrar'});
     }
 }
 
@@ -111,10 +149,9 @@ sub checkdb($) {
     if (!&table_exists($dbh, "rollerderby_players")) {
         $dbh->do(q(CREATE TABLE rollerderby_players (
             `derbyname` VARCHAR(64),
-            `teamname` VARCHAR(64),
-            `number` VARCHAR(16),
             `league` VARCHAR(64),
             `dateadded` VARCHAR(12),
+            `number` VARCHAR(16),
             `registrar` VARCHAR(64))));
     }
 }
