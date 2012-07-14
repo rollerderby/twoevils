@@ -81,6 +81,20 @@ $(document).ready(function(){
 });
 
 function loadcontent(x) {
-    alert(x);
+    $("#content").html("<spann id='loading'>Loading...</span>");
+    $.ajax({ url: "ajax.php?action=getchar&char="+x,
+        success: function(data) { 
+            var newhtml="<table>\n";
+            $.each(data, function(x, y) {
+                newhtml = newhtml + "<tr><td>" + y['derbyname'] + "</td><td>" + y['number'] + "</td>";
+                newhtml = newhtml + "<td>" + y['dateadded'] + "</td><td>" + y['league'] + "</td><td>";
+                newhtml = newhtml + y['registrar'] + "</td></tr>\n";
+            });
+            newhtml = newhtml + "</table>";
+            $("#content").html(newhtml);
+        }
+    });
 }
+
+
 </script>
