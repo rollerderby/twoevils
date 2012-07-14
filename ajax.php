@@ -110,7 +110,11 @@ if ($_REQUEST['action'] === 'getchar') {
         }
     }
 
-    print @json_encode(array("size" => $header[0], "pages" => $parr, "pagecount" => $pages, "thispage" => $page, "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
+    if ($pages == 1) {
+        print @json_encode(array("size" => $header[0], "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
+    } else {
+        print @json_encode(array("size" => $header[0], "pages" => $parr, "pagecount" => $pages, "thispage" => $page, "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
+    }
     exit;
 }
 
