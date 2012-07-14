@@ -10,7 +10,7 @@ $dbhost = $dbname = $dbuser = $dbpw = 'undefined';
 $all = file("../wp-config.php");
 
 if (!isset($_REQUEST['action'])) { $_REQUEST['action'] = 'getchar'; }
-if (!isset($_REQUEST['char'])) { $_REQUEST['char'] = 'Z'; }
+if (!isset($_REQUEST['char'])) { $_REQUEST['char'] = "'"; }
 
 foreach($all as $line_num => $line) {
     if (preg_match("/define.'DB_NAME', '(.+)'/", $line, $m)) { $dbname = $m[1]; }
@@ -30,12 +30,13 @@ if ($_REQUEST['action'] === 'list') {
 }
 
 if ($_REQUEST['action'] === 'getchar') {
-    if (strlen($_REQUEST['char']) != 1) {
+    $char = urldecode($_REQUEST['char']);
+    if (strlen($char) != 1) {
         exit;
     }
     $sql = "select * from rollerderby_players where derbyname like :char";
     $query = $dbh->prepare($sql);
-    $query->execute(array( ":char" => $_REQUEST['char']."%"));
+    $query->execute(array( ":char" => $char."%"));
     $data = $query->fetchAll(PDO::FETCH_CLASS);
     print @json_encode($data); /* There is LOTS of bad UTF8 data in the scrape.. */
     exit;

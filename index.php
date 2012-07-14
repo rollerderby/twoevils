@@ -66,13 +66,13 @@ $(document).ready(function(){
         if($(this).val() == ''){ $('#input-prompt-' + i).show(); }
       });
     });
-    $('#derbyname').autocomplete({ source: "http://rollerder.by/twoevils/ajax.php" });
+    $('#derbyname').autocomplete({ source: "http://rollerder.by/twoevils/ajax.php?action=search&" });
     $.ajax({ url: "ajax.php?action=list",
         success: function(data) { 
             var newhtml = "<table><tr>"
             $("#initials").html("<table><tr>");
             $.each(data, function(x,y) {
-                newhtml = newhtml + "<td class='h' data-value='"+y+"'>"+y+"</td>";
+                newhtml = newhtml + '<td class="h" data-value="'+encodeURIComponent(y)+'">'+y+'</td>';
             })
             $("#initials").html(newhtml+"</tr></td></table>");
             $(".h").click(function() {loadcontent($(this).data("value"))});
@@ -82,7 +82,7 @@ $(document).ready(function(){
 
 function loadcontent(x) {
     $("#content").html("<spann id='loading'>Loading...</span>");
-    $.ajax({ url: "ajax.php?action=getchar&char="+x,
+    $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x),
         success: function(data) { 
             var newhtml="<table>\n";
             $.each(data, function(x, y) {
