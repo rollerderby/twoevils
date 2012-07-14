@@ -3,6 +3,8 @@
 use Data::Dumper;
 use DBI;
 
+my $debug=0;
+
 #use LWP::Simple;
 #
 # So. lets grab the twoevils site, and stick it in a temp file.
@@ -50,8 +52,10 @@ while (<FH>) {
     }
 }
 
+
+&loadAustralia;
 &loadPlayers(@players);
-&loadTeams(@teams);
+#&loadTeams(@teams);
 
 sub loadPlayers($) {
     my @players = @_;
@@ -76,6 +80,8 @@ sub loadPlayers($) {
         # Remove possible XSS issues. Yes, I'm paranoid.
         foreach $var (qw(name league dateadded number)) {
             $tmp->{$var} =~ s/(<|>|&gt;|&lt;)//g;
+            $tmp->{$var} =~ s/‘|’|′/'/g;
+            $tmp->{$var} =~ s/“|”/"/g;
         }
         # That appears to be it. Load it in!
         $sth->execute($tmp->{'name'}, $tmp->{'league'}, $fixeddate, $tmp->{'number'}, $tmp->{'registrar'});
@@ -166,3 +172,87 @@ sub table_exists {
     my $exists = scalar @info;
     return $exists;
 }
+
+sub loadAustralia {
+    # Process Australia
+    open (FH, "australia.html");
+    # This is a bit harder than twoevils, as they have multiple lines per skater.
+    while (<FH>) {
+        my $playertype=$playername=$number=$league = 'undefined';
+        if (/^<tr>$/) {
+            # This may be the start of a player profile, OR, the header.
+            # First line is the category.
+            my $line = <FH>;
+            if ($line =~ /<td align="LEFT" height="\d+">(.+)<.td>/) {
+                $playertype = $1;
+                print "Found $playertype" if ($debug);
+            } elsif ($line =~ /<td align="LEFT" width="100" height="22"><strong>/) {
+                # Header. ignore.
+            } else {
+                print "Odd stuff. $line\n";
+                exit;
+            }
+
+            # Second line is derby name
+            $line = <FH>;
+            if ($line =~ /<td align="LEFT" width="221"><strong>/) {
+                # Header. ignore.
+            } elsif ($line =~ /<td align="LEFT".*>(.+)<.td>/) {
+                $playername = $1;
+                # Now, clean up any </span> or </a> on there. 
+                $playername =~ s/<.+>$//;
+                # Undo HTML mangling
+                $playername =~ s/&#821[67];/'/g;
+                $playername =~ s/&#8242;/'/g;
+                $playername =~ s/&#8211;/-/g;
+                $playername =~ s/&amp;/&/g;
+                print ", $playername" if ($debug);
+            } else {
+                print "Odd stuff. $line\n";
+                exit;
+            }
+
+            # Third line is number
+            $line = <FH>;
+
+            # Ah. Turns out there are some single lines that split up over two lines. YAY!
+            if ($line !~ /td>$/) {
+                chomp($line);
+                $line .= <FH>;
+            }
+
+            if ($line =~ /<td align="CENTER.*><strong>(.+)<.td>/) {
+                # Header. Ignore.
+            } elsif ($line =~ /<td align=".*>(.+)<.td>/) {
+                $number = $1;
+                # Strip off any HTML left over...
+                $number =~ s/<.+>$//;
+                $number =~ s/&#215;/x/g;
+                $number =~ s/&amp;/&/g;
+                print ", $number" if ($debug);
+            } elsif ($line =~ /<td align=".+"><.td>/) {
+                $number = "";
+                print ", (Blank)" if ($debug);
+            } else {
+                print "Odd stuff. $line\n";
+                exit;
+            }
+    
+            # Fourth line is League. 
+            $line = <FH>;
+            if ($line =~ /<td align=".*><strong>(.+)<.td>/) {
+                # Header. Ignore.
+            } elsif ($line =~ /<td align=".*>(.+)<.td>/) {
+                $league = $1;
+                $league =~ s/<.a>//;
+                print ", $league\n" if ($debug);
+            }
+    
+            # We're done! Load that up.
+            if ($playername ne "undefined") {
+                push @players, {"name", $playername, "number", $number, "dateadded", "Unknown", "league", $league, "registrar", "rollerderbyau"};
+            }
+        }
+    }
+}
+
