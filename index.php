@@ -44,7 +44,7 @@
 </head>
 <body>
 <h2>Roller Derby Names</h2>
-<p><input id='derbyname' type='text' title='Start typing a derby name...' size=50 /></p>
+<p><input id='derbyname' type='text' title='Start typing a derby name...' size=30 /></p>
 <p><div id='initials'>Loading...</div></p>
 <p id='content'>Content goes here</p>
 
@@ -101,6 +101,10 @@ function loadcontent(x) {
 }
 
 function searchname(x) {
+    if (x.length < 4) {
+        $("#content").html("<span id='warning'>Please enter more than 3 characters</span>");
+        return;
+    }
     $("#content").html("<span id='loading'>Loading...</span>");
     $.ajax({ url: "ajax.php?action=search&name="+encodeURIComponent(x),
         success: function(data) { 
