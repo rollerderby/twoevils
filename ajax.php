@@ -58,7 +58,7 @@ if ($_REQUEST['action'] === 'getchar') {
     $query->execute(array( ":char" => $char."%"));
     $data = $query->fetchAll(PDO::FETCH_CLASS);
     # How many pages do we need?
-    $pages = intval($header[0]/$rpp);
+    $pages = intval($header[0]/$rpp)+1;
     if ($pages === 0) {
         # Don't mention the war!
         print @json_encode(array("size" => $header[0], "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
@@ -99,7 +99,7 @@ if ($_REQUEST['action'] === 'getchar') {
     }
 
     # And the next 10 up
-    if ($page == $pages || $page+4 > $pages) {
+    if ($page == $pages || $page+4 >= $pages) {
         # Already there
     } else {
         $next = $page+4 -($page+4)%10 + 10;
