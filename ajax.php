@@ -15,7 +15,7 @@ $rpp = 50;
 if (!isset($_REQUEST['action'])) { $_REQUEST['action'] = 'getchar'; }
 if (!isset($_REQUEST['char'])) { $_REQUEST['char'] = "A"; }
 if (!isset($_REQUEST['name'])) { $_REQUEST['name'] = "eddi"; }
-if (!isset($_REQUEST['page'])) { $_REQUEST['page'] = "1"; }
+if (!isset($_REQUEST['page'])) { $_REQUEST['page'] = 1; }
 
 foreach($all as $line_num => $line) {
     if (preg_match("/define.'DB_NAME', '(.+)'/", $line, $m)) { $dbname = $m[1]; }
@@ -40,7 +40,7 @@ if ($_REQUEST['action'] === 'getchar') {
         print "noint from ".$_REQUEST['page']."\n";
         exit;
     }
-    $page = $_REQUEST['page'] - 1;
+    $page = $_REQUEST['page'];
     $char = urldecode($_REQUEST['char']);
     if (strlen($char) != 1) {
         exit;
@@ -52,21 +52,65 @@ if ($_REQUEST['action'] === 'getchar') {
     $header = $query->fetchAll(PDO::FETCH_COLUMN, 0);
 
     # Now, get the page of results..
-    $start = (int) $page*$rpp;
-    $end = (int) (($page+1)*$rpp)-1;
-    $sql = "select * from rollerderby_players where derbyname like :char limit $start, $end";
+    $start = intval(($page-1)*$rpp);
+    $sql = "select * from rollerderby_players where derbyname like :char order by derbyname limit $start, $rpp";
     $query = $dbh->prepare($sql);
     $query->execute(array( ":char" => $char."%"));
     $data = $query->fetchAll(PDO::FETCH_CLASS);
     # How many pages do we need?
-    $pages = (int) $header[0]/$rpp;
+    $pages = intval($header[0]/$rpp);
     if ($pages === 0) {
         # Don't mention the war!
         print @json_encode(array("size" => $header[0], "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
         exit;
     }
-    $parr = range(1, $pages);
-    print @json_encode(array("size" => $header[0], "pages" => $parr, "thispage" => $page+1, "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
+
+    # Right. Lets assume we have 78 pages, and we're on page.. 12.
+    # We want 3 pages on either side of where we are, and then back and forward to the next and previous two multiples of 10.
+    # We also want the last page number, too, if next multiple of ten is > npages.
+    # So we should have << Previous | Next >> 1 9 10 11 /12/ 13 14 15 ... 20 30 78 
+    # Same for the first.
+    # So. We'll start by sticking our current page on the array
+    $parr = array($page);
+    # Now, if $page <= 3, we just want 1.2.3
+    if ($page != 1) {
+        if ($page <= 3) {
+             $parr = array_merge(range(1, $page-1), $parr);
+        } else {
+             $parr = array_merge(range($page-2, $page-1), $parr);
+        }
+    }
+    # Right. Now, lets add the next three on the end.
+    if ($page == $pages) {
+        # Already there
+    } elseif ($page+3 > $pages) {
+        $parr = array_merge($parr, range($page+1, $pages));
+    } else {
+        $parr = array_merge($parr, range($page+1, $page+4));
+    }
+
+    # OK, so now we have 9 10 11 /12/ 13 14 15. Lets add the next 10 down.
+    if ($page <= 3) {
+        # Already there
+    } elseif ($page <= 14) {
+        $parr = array_merge(array(1), $parr);
+    } else {
+        $parr = array_merge(array(($page-4) - (($page - 4)%10)), $parr);
+    }
+
+    # And the next 10 up
+    if ($page == $pages || $page+3 > $pages) {
+        # Already there
+    } else {
+        $next = $page+3 -($page+3)%10 + 10;
+        if ($next > $pages) {
+            $parr = array_merge($parr, array($pages));
+        } else {
+            $parr = array_merge($parr, array($page+3 -($page+3)%10 + 10));
+        }
+    }
+
+    print @json_encode(array("size" => $header[0], "pages" => $parr, "thispage" => $page, "data" => $data)); /* There is LOTS of bad UTF8 data in the scrape.. */
     exit;
 }
 

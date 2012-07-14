@@ -7,9 +7,8 @@
 <style type="text/css">
 
 <style type="text/css">
-        html, body { font-family: sans-serif; }
         html { background-color: #eee; }
-
+        html, body { font-family: sans-serif; }
         body {
                 background-color: #fff;
                 margin: 20px auto;
@@ -22,13 +21,6 @@
         h3 { text-align: left; margin: 5px;}
 
         th,td { text-align: center; border: 1px solid black; width:80px; }
-        td.cardno { width: 100px; }
-        td.ttime { width: 150px; }
-        td.tid { width: 90px; }
-        td.product { text-align: left; width:350px; padding-left: .2em;}
-
-        /* tr.odd { background-color: lightcyan; } */
-
         u, a { text-decoration: none; border-bottom: 1px solid; }
 
         table { width: 100%; border-collapse: collapse;}
@@ -91,6 +83,7 @@ function loadcontent(x, page) {
     $("#content").html("<span id='loading'>Loading...</span>");
     $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x)+"&page="+page,
         success: function(data) { 
+            console.log("I'm here");
             var newhtml="<div id='pageselect'>"+data['size']+" Results. ";
             if (typeof data['pages'] != 'undefined') {
                 $.each(data['pages'], function(x, y) {
