@@ -1,7 +1,7 @@
 <html>
 <head>
 <title>Roller Derby Name Registrations</title>
-<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css" type="text/css" media="all" />
+<xlink rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css" type="text/css" media="all" />
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script>
 <style type="text/css">
@@ -23,23 +23,28 @@
         th,td { text-align: center; border: 1px solid black; width:80px; }
         u, a { text-decoration: none; border-bottom: 1px solid; }
 
-        table { width: 100%; border-collapse: collapse;}
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .ui-datepicker { font-size: .7em; }
         .input-prompt { position: absolute; font-style: italic; color: #aaa; margin: 0.2em 0 0 0.5em; }
         .headeroption { border: 2px solid black; margin: 0; padding: 0}
         #initials {position: relative; left: 0px; right: 0px; top: 0px; width: 100%; }
         .clicks { width: 100%; border: 0; padding: 0; margin: 0 }
-        .h { cursor:pointer }
+        .h { cursor:pointer; width: 18px;  }
         .h:hover { background-color: #ccddee; }
         .pagejump { padding-left: 1em; color: red; cursor: pointer}
         .pagejump:hover { background-color: #ccddee; } 
         #spage { text-decoration: underline }
+        th { font-variant: small-caps; }
+        .dnum { width: 40px; }
+        .dj { width: 40px; }
+        .source { width: 40px; }
 
 </style>
 </head>
 <body>
 <h2>Roller Derby Names</h2>
-<p><input id='derbyname' type='text' title='Start typing a derby name...' size=30 /></p>
+<div id='left'><input id='derbyname' type='text' title='Search for a derby name...' size=30 /></div>
+<div id='right'><input id='soundslike' type='text' title='Search for a similar sounding name' size=40> (Doesn't work yet) </div>
 <p><div id='initials'>Loading...</div></p>
 <p id='content'>Content goes here</p>
 
@@ -81,9 +86,15 @@ $(document).ready(function(){
 
 function loadcontent(x, page) {
     $("#content").html("<span id='loading'>Loading...</span>");
+    $(".h").each(function() {
+        if ($(this).data("value") == x) {
+            $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
+        } else {
+            $(this).animate({ backgroundColor: "#ccddee" }, 'fast');
+        }
+    });
     $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x)+"&page="+page,
         success: function(data) { 
-            console.log("I'm here");
             var newhtml="<div id='pageselect'>"+data['size']+" Results. ";
             if (typeof data['pages'] != 'undefined') {
                 newhtml = newhtml + '(' +data['pagecount'] + ' pages) ';
@@ -95,7 +106,7 @@ function loadcontent(x, page) {
                     }
                 });
             }
-            newhtml = newhtml + "</div><table>\n";
+            newhtml = newhtml + "</div>" + header();
             $.each(data['data'], function(x, y) {
                 newhtml = newhtml + "<tr><td>" + y['derbyname'] + "</td><td>" + y['number'] + "</td>";
                 newhtml = newhtml + "<td>" + y['dateadded'] + "</td><td>" + y['league'] + "</td><td>";
@@ -109,6 +120,9 @@ function loadcontent(x, page) {
 }
 
 function searchname(x) {
+    $(".h").each(function() {
+            $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
+    });
     if (x.length < 4) {
         $("#content").html("<span id='warning'>Please enter more than 3 characters</span>");
         return;
@@ -116,7 +130,7 @@ function searchname(x) {
     $("#content").html("<span id='loading'>Loading...</span>");
     $.ajax({ url: "ajax.php?action=search&name="+encodeURIComponent(x),
         success: function(data) { 
-            var newhtml="<table>\n";
+            var newhtml=header();
             $.each(data, function(x, y) {
                 newhtml = newhtml + "<tr><td>" + y['derbyname'] + "</td><td>" + y['number'] + "</td>";
                 newhtml = newhtml + "<td>" + y['dateadded'] + "</td><td>" + y['league'] + "</td><td>";
@@ -128,6 +142,10 @@ function searchname(x) {
     });
 }
 
-
+function header() {
+    var html = '<table class="main"><tr><th class="dn">Derby Name</th><th class="dnum">Number</th>';
+    html = html + '<th class="dj">Date Joined</th><th class="club">Club</th><th class="source">Source</th>\n';
+    return html
+}
 
 </script>
