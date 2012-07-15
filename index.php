@@ -8,7 +8,8 @@
 
 <style type="text/css">
         html { background-color: #eee; }
-        html, body { font-family: sans-serif; overflow-y: scroll; }
+        html, body { font-family: sans-serif; }
+        html { overflow-y: scroll; }
         body {
                 background-color: #fff;
                 margin: 20px auto;
@@ -34,7 +35,7 @@
         .pagejump { padding-left: 1em; color: red; cursor: pointer}
         .pagejump:hover { background-color: #ccddee; } 
         #spage { text-decoration: underline }
-        table.main {width: 950px; }
+        table.main {width: 980px; }
         th { font-variant: small-caps; }
         th.dn { width: 50px; }
         th.dnum { width: 30px; }
