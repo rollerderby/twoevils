@@ -51,7 +51,7 @@
 </head>
 <body>
 <h2>Roller Derby Names</h2>
-<div id='left'><input id='derbyname' type='text' title='Search for a derby name...' size=30 /></div>
+<div id='left'><input id='derbyname' type='text' title='Search for a derby name...' size=30 /> &nbsp; <span id='status'></span></div>
 <div id='right'><input id='soundslike' type='text' title='Search for a similar sounding name' size=40> (Doesn't work yet) </div>
 <p><div id='initials'>Loading...</div></p>
 <span id=displaybox>
@@ -81,7 +81,12 @@ $(document).ready(function(){
         if($(this).val() == ''){ $('#input-prompt-' + i).show(); }
       });
     });
-   $('#derbyname').keyup(function() { 
+    $('#derbyname').keyup(function() {
+        if ($("#derbyname").length == 0) {
+            $("#status").html("");
+        } else {
+            $("#status").html("Waiting for you to finish typing...");
+        }
        clearTimeout($.data(this, 'timer'));
        var wait = setTimeout(function() { searchname($("#derbyname").val()) }, 500);
        $(this).data('timer', wait);
@@ -144,6 +149,7 @@ function searchname(x) {
     $(".h").each(function() {
             $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
     });
+    $("#status").html("Searching...");
     if (x.length < 4) {
         disp("<span id='warning'>Please enter more than 3 characters</span>");
         return;
@@ -158,6 +164,7 @@ function searchname(x) {
             });
             newhtml = newhtml + "</table>";
             disp(newhtml);
+            $("#status").html("");
         }
     });
 }
