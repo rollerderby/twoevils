@@ -8,7 +8,7 @@
 
 <style type="text/css">
         html { background-color: #eee; }
-        html, body { font-family: sans-serif; }
+        html, body { font-family: sans-serif; overflow-y: scroll; }
         body {
                 background-color: #fff;
                 margin: 20px auto;
