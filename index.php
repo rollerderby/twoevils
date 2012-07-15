@@ -82,8 +82,10 @@ $(document).ready(function(){
       });
     });
     $('#derbyname').keyup(function() {
-        if ($("#derbyname").length == 0) {
+        if ($("#derbyname").val().length == 0) {
             $("#status").html("");
+        } else if ($('#derbyname').val().length < 4) {
+            $("#status").html("Please enter more than 3 characters.");
         } else {
             $("#status").html("Waiting for you to finish typing...");
         }
@@ -150,10 +152,6 @@ function searchname(x) {
             $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
     });
     $("#status").html("Searching...");
-    if (x.length < 4) {
-        disp("<span id='warning'>Please enter more than 3 characters</span>");
-        return;
-    }
     $.ajax({ url: "ajax.php?action=search&name="+encodeURIComponent(x),
         success: function(data) { 
             var newhtml=header();
