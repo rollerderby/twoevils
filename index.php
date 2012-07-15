@@ -35,9 +35,12 @@
         .pagejump:hover { background-color: #ccddee; } 
         #spage { text-decoration: underline }
         th { font-variant: small-caps; }
-        .dnum { width: 40px; }
-        .dj { width: 40px; }
-        .source { width: 40px; }
+        th.dnum { width: 30px; }
+        th.dj { width: 40px; }
+        th.source { width: 40px; }
+        td.dn { text-align: left; padding-left: .5em;}
+        td.dnum { text-align: left; padding-left: .5em;}
+        #pageselect {float: right;}
 
 </style>
 </head>
@@ -49,7 +52,11 @@
 <p id='content'>Content goes here</p>
 
 <script type='text/javascript'>
+window.setTimeout(function() {
+    window.addEventListener("popstate", function(e) { window.location.reload(); }, false);
+}, 1);
 $(document).ready(function(){
+
    $('input[type=text][title],input[type=password][title],textarea[title]').each(function(i){
       $(this).addClass('input-prompt-' + i);
       var promptSpan = $('<span class="input-prompt"/>');
@@ -80,11 +87,18 @@ $(document).ready(function(){
           })
           $("#initials").html(newhtml+"</tr></td></table>");
           $(".h").click(function() {loadcontent($(this).data("value"), 1)});
+<?php
+  if (!isset($_REQUEST['page'])) { $page = 1; } else { $page = $_REQUEST['page']; }
+  if (isset($_REQUEST['letter'])) { print "          loadcontent('".$_REQUEST['letter']."', $page);\n"; } 
+?>
        }
    });
+    
 });
 
 function loadcontent(x, page) {
+    var stateObj;
+    history.pushState(stateObj, "Roller Derby Names", '?letter='+x+'&page='+page);
     $("#content").html("<span id='loading'>Loading...</span>");
     $(".h").each(function() {
         if ($(this).data("value") == x) {
@@ -95,7 +109,7 @@ function loadcontent(x, page) {
     });
     $.ajax({ url: "ajax.php?action=getchar&char="+encodeURIComponent(x)+"&page="+page,
         success: function(data) { 
-            var newhtml="<div id='pageselect'>"+data['size']+" Results. ";
+            var newhtml="<span id='pageselect'>"+data['size']+" Results. ";
             if (typeof data['pages'] != 'undefined') {
                 newhtml = newhtml + '(' +data['pagecount'] + ' pages) ';
                 $.each(data['pages'], function(x, y) {
@@ -106,10 +120,10 @@ function loadcontent(x, page) {
                     }
                 });
             }
-            newhtml = newhtml + "</div>" + header();
+            newhtml = newhtml + "</span>" + header();
             $.each(data['data'], function(x, y) {
-                newhtml = newhtml + "<tr><td>" + y['derbyname'] + "</td><td>" + y['number'] + "</td>";
-                newhtml = newhtml + "<td>" + y['dateadded'] + "</td><td>" + y['league'] + "</td><td>";
+                newhtml = newhtml + "<tr><td class='dn'>" + y['derbyname'] + "</td><td class='dnum'>" + y['number'] + "</td>";
+                newhtml = newhtml + "<td class='dj'>" + y['dateadded'] + "</td><td class='club'>" + y['league'] + "</td><td class='source'>";
                 newhtml = newhtml + y['registrar'] + "</td></tr>\n";
             });
             newhtml = newhtml + "</table>";
