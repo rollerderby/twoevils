@@ -1,3 +1,4 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <title>Roller Derby Name Registrations</title>
@@ -151,6 +152,10 @@ function searchname(x) {
     $(".h").each(function() {
             $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
     });
+    if (x.length < 4) {
+        $("#status").html("Please enter more than 3 characters.");
+        return;
+    }
     $("#status").html("Searching...");
     $.ajax({ url: "ajax.php?action=search&name="+encodeURIComponent(x),
         success: function(data) { 
