@@ -174,9 +174,9 @@ function disp(x) {
         $("#content-2").html(x);
         $("#content-1").fadeOut(400);
         $("#content-2").fadeIn(400);
-        var nh = $("#content-2").height()+220;
-        if (nh < $(window).height() - 50) {
-            nh = $(window).height() - 50;
+        var nh = $("#content-2").height()+200;
+        if (nh < $(window).height() - 30) {
+            nh = $(window).height() - 30;
         }
         $("body").css({ "height" : nh });
     } else {
@@ -184,9 +184,9 @@ function disp(x) {
         $("#content-1").html(x);
         $("#content-2").fadeOut(400);
         $("#content-1").fadeIn(400);
-        var nh = $("#content-1").height()+220;
-        if (nh < $(window).height() - 50) {
-            nh = $(window).height() - 50;
+        var nh = $("#content-1").height()+200;
+        if (nh < $(window).height() - 30) {
+            nh = $(window).height() - 30;
         }
         $("body").css({ "height" : nh });
     }
