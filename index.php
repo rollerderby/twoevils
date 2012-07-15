@@ -34,13 +34,17 @@
         .pagejump { padding-left: 1em; color: red; cursor: pointer}
         .pagejump:hover { background-color: #ccddee; } 
         #spage { text-decoration: underline }
+        table.main {width: 950px; }
         th { font-variant: small-caps; }
+        th.dn { width: 50px; }
         th.dnum { width: 30px; }
         th.dj { width: 40px; }
         th.source { width: 40px; }
         td.dn { text-align: left; padding-left: .5em;}
         td.dnum { text-align: left; padding-left: .5em;}
-        #pageselect {float: right;}
+        #xpageselect {float: right;}
+        #content-1, #content-2 {display: none; position: absolute;}
+        #displaybox { width: inherit; }
 
 </style>
 </head>
@@ -49,14 +53,17 @@
 <div id='left'><input id='derbyname' type='text' title='Search for a derby name...' size=30 /></div>
 <div id='right'><input id='soundslike' type='text' title='Search for a similar sounding name' size=40> (Doesn't work yet) </div>
 <p><div id='initials'>Loading...</div></p>
-<p id='content'>Content goes here</p>
+<span id=displaybox>
+<p id='content-1'>Content goes here</p>
+<p id='content-2'>Content goes here</p>
+</span>
 
 <script type='text/javascript'>
 window.setTimeout(function() {
     window.addEventListener("popstate", function(e) { window.location.reload(); }, false);
 }, 1);
 $(document).ready(function(){
-
+    window.currentcontent = 'content-1';
    $('input[type=text][title],input[type=password][title],textarea[title]').each(function(i){
       $(this).addClass('input-prompt-' + i);
       var promptSpan = $('<span class="input-prompt"/>');
@@ -99,7 +106,6 @@ $(document).ready(function(){
 function loadcontent(x, page) {
     var stateObj;
     history.pushState(stateObj, "Roller Derby Names", '?letter='+x+'&page='+page);
-    $("#content").html("<span id='loading'>Loading...</span>");
     $(".h").each(function() {
         if ($(this).data("value") == x) {
             $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
@@ -127,7 +133,7 @@ function loadcontent(x, page) {
                 newhtml = newhtml + y['registrar'] + "</td></tr>\n";
             });
             newhtml = newhtml + "</table>";
-            $("#content").html(newhtml);
+            disp(newhtml);
             $(".pagejump").click(function() {loadcontent(x, $(this).data("value"))});
         }
     });
@@ -138,10 +144,9 @@ function searchname(x) {
             $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
     });
     if (x.length < 4) {
-        $("#content").html("<span id='warning'>Please enter more than 3 characters</span>");
+        disp("<span id='warning'>Please enter more than 3 characters</span>");
         return;
     }
-    $("#content").html("<span id='loading'>Loading...</span>");
     $.ajax({ url: "ajax.php?action=search&name="+encodeURIComponent(x),
         success: function(data) { 
             var newhtml=header();
@@ -151,7 +156,7 @@ function searchname(x) {
                 newhtml = newhtml + y['registrar'] + "</td></tr>\n";
             });
             newhtml = newhtml + "</table>";
-            $("#content").html(newhtml);
+            disp(newhtml);
         }
     });
 }
@@ -160,6 +165,30 @@ function header() {
     var html = '<table class="main"><tr><th class="dn">Derby Name</th><th class="dnum">Number</th>';
     html = html + '<th class="dj">Date Joined</th><th class="club">Club</th><th class="source">Source</th>\n';
     return html
+}
+
+function disp(x) {
+    if (window.currentcontent == 'content-1') {
+        window.currentcontent = 'content-2';
+        $("#content-2").html(x);
+        $("#content-1").fadeOut(400);
+        $("#content-2").fadeIn(400);
+        var nh = $("#content-2").height()+220;
+        if (nh < $(window).height() - 50) {
+            nh = $(window).height() - 50;
+        }
+        $("body").css({ "height" : nh });
+    } else {
+        window.currentcontent = 'content-1';
+        $("#content-1").html(x);
+        $("#content-2").fadeOut(400);
+        $("#content-1").fadeIn(400);
+        var nh = $("#content-1").height()+220;
+        if (nh < $(window).height() - 50) {
+            nh = $(window).height() - 50;
+        }
+        $("body").css({ "height" : nh });
+    }
 }
 
 </script>
