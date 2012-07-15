@@ -120,7 +120,7 @@ if ($_REQUEST['action'] === 'getchar') {
 
 if ($_REQUEST['action'] === 'search') {
     $char = $_REQUEST['name'];
-    $sql = "select * from rollerderby_players where derbyname like concat('%', :char, '%')";
+    $sql = "select * from rollerderby_players where derbyname like concat('%', :char, '%') order by derbyname";
     $query = $dbh->prepare($sql);
     $query->execute(array( ":char" => $char));
     $data = $query->fetchAll(PDO::FETCH_CLASS);
