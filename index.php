@@ -61,8 +61,12 @@
 $(document).ready(function(){
     $.address.change(function(event){ 
         /* Regexp is winrar */
-        var reg = event.value.match(/letter=(.)&page=(.+)/);
-        if (reg != null) { loadcontent(reg[1], reg[2]); }
+        var reg
+        if (reg = event.value.match(/letter=(.)&page=(.+)/)) {
+            loadcontent(reg[1], reg[2]);
+        } else if (reg = event.value.match(/search=(.+)/)) {
+            searchname(reg[1]);
+        }
     });
     window.currentcontent = 'content-1';
    $('input[type=text][title],input[type=password][title],textarea[title]').each(function(i){
@@ -150,6 +154,7 @@ function loadcontent(x, page) {
 }
 
 function searchname(x) {
+    $.address.value("search="+x);
     $(".h").each(function() {
             $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
     });
