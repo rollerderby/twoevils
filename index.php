@@ -61,7 +61,6 @@
 $(document).ready(function(){
     $.address.change(function(event){ 
         /* Regexp is winrar */
-        console.log(event.value);
         var reg = event.value.match(/letter=(.)&page=(.+)/);
         if (reg != null) { loadcontent(reg[1], reg[2]); }
     });
