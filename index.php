@@ -1,10 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <title>Roller Derby Name Registrations</title>
-<xlink rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css" type="text/css" media="all" />
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script>
+<script src="jquery.address-1.4.min.js" type="text/javascript"></script>
 <style type="text/css">
 
 <style type="text/css">
@@ -20,17 +21,13 @@
                 padding: 10px;
         }
         h2 { text-align: center; margin-bottom: 2px;}
-        h3 { text-align: left; margin: 5px;}
 
         th,td { text-align: center; border: 1px solid black; width:80px; }
         u, a { text-decoration: none; border-bottom: 1px solid; }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .ui-datepicker { font-size: .7em; }
         .input-prompt { position: absolute; font-style: italic; color: #aaa; margin: 0.2em 0 0 0.5em; }
-        .headeroption { border: 2px solid black; margin: 0; padding: 0}
         #initials {position: relative; left: 0px; right: 0px; top: 0px; width: 100%; }
-        .clicks { width: 100%; border: 0; padding: 0; margin: 0 }
         .h { cursor:pointer; width: 18px;  }
         .h:hover { background-color: #ccddee; }
         .pagejump { padding-left: 1em; color: red; cursor: pointer}
@@ -61,10 +58,13 @@
 </span>
 
 <script type='text/javascript'>
-window.setTimeout(function() {
-    window.addEventListener("popstate", function(e) { window.location.reload(); }, false);
-}, 1);
 $(document).ready(function(){
+    $.address.change(function(event){ 
+        /* Regexp is winrar */
+        console.log(event.value);
+        var reg = event.value.match(/letter=(.)&page=(.+)/);
+        if (reg != null) { loadcontent(reg[1], reg[2]); }
+    });
     window.currentcontent = 'content-1';
    $('input[type=text][title],input[type=password][title],textarea[title]').each(function(i){
       $(this).addClass('input-prompt-' + i);
@@ -102,7 +102,9 @@ $(document).ready(function(){
               newhtml = newhtml + '<td class="h" data-value="'+encodeURIComponent(y)+'">'+y+'</td>';
           })
           $("#initials").html(newhtml+"</tr></td></table>");
-          $(".h").click(function() {loadcontent($(this).data("value"), 1)});
+          $(".h").click(function() {
+              loadcontent($(this).data("value"), 1);
+          });
 <?php
   if (!isset($_REQUEST['page'])) { $page = 1; } else { $page = $_REQUEST['page']; }
   if (isset($_REQUEST['letter'])) { print "          loadcontent('".$_REQUEST['letter']."', $page);\n"; } 
@@ -114,7 +116,7 @@ $(document).ready(function(){
 
 function loadcontent(x, page) {
     var stateObj;
-    history.pushState(stateObj, "Roller Derby Names", '?letter='+x+'&page='+page);
+    $.address.value("letter="+x+"&page="+page);
     $(".h").each(function() {
         if ($(this).data("value") == x) {
             $(this).animate({ backgroundColor: "#f6f6f6" }, 'fast');
