@@ -94,7 +94,9 @@ $(document).ready(function(){
             $("#status").html("Waiting for you to finish typing...");
         }
        clearTimeout($.data(this, 'timer'));
-       var wait = setTimeout(function() { searchname($("#derbyname").val()) }, 500);
+        var wait = setTimeout(function() {
+            $.address.value("search="+$("#derbyname").val());
+        }, 500);
        $(this).data('timer', wait);
    });
    $.ajax({ url: "ajax.php?action=list",
@@ -186,7 +188,7 @@ function disp(x) {
     if (window.currentcontent == 'content-1') {
         window.currentcontent = 'content-2';
         $("#content-2").html(x);
-        $("#content-1").fadeOut(400, function() { $("#content-1").html("Shouldn't see this (c1)");});
+        $("#content-1").fadeOut(400, function() { $("#content-1").html("Clicking too fast, can't keep up!");});
         $("#content-2").fadeIn(400);
         var nh = $("#content-2").height()+200;
         if (nh < $(window).height() - 30) {
@@ -201,7 +203,7 @@ function disp(x) {
             nh = $(window).height() - 30;
         }
         $("body").css({ "height" : nh });
-        $("#content-2").fadeOut(400, function() { $("#content-2").html("Shouldn't see this (c2)");});
+        $("#content-2").fadeOut(400, function() { $("#content-2").html("Clicking too fast, can't keep up!");});
         $("#content-1").fadeIn(400);
     }
 }
