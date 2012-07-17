@@ -59,6 +59,7 @@
 
 <script type='text/javascript'>
 $(document).ready(function(){
+    window.currentcontent = 'content-1';
     $.address.change(function(event){ 
         /* Regexp is winrar */
         var reg
@@ -68,7 +69,6 @@ $(document).ready(function(){
             searchname(reg[1]);
         }
     });
-    window.currentcontent = 'content-1';
    $('input[type=text][title],input[type=password][title],textarea[title]').each(function(i){
       $(this).addClass('input-prompt-' + i);
       var promptSpan = $('<span class="input-prompt"/>');
@@ -105,13 +105,10 @@ $(document).ready(function(){
               newhtml = newhtml + '<td class="h" data-value="'+encodeURIComponent(y)+'">'+y+'</td>';
           })
           $("#initials").html(newhtml+"</tr></td></table>");
+          $(".h").unbind('click'); /* Just to make sure */
           $(".h").click(function() {
-              loadcontent($(this).data("value"), 1);
+              $.address.value("letter="+$(this).data("value")+"&page="+1);
           });
-<?php
-  if (!isset($_REQUEST['page'])) { $page = 1; } else { $page = $_REQUEST['page']; }
-  if (isset($_REQUEST['letter'])) { print "          loadcontent('".$_REQUEST['letter']."', $page);\n"; } 
-?>
        }
    });
     
@@ -148,9 +145,10 @@ function loadcontent(x, page) {
             });
             newhtml = newhtml + "</table>";
             disp(newhtml);
-            $(".pagejump").click(function() {loadcontent(x, $(this).data("value"))});
+            $(".pagejump").click(function() { $.address.value("letter="+x+"&page="+$(this).data("value"))});
         }
     });
+    return false;
 }
 
 function searchname(x) {
@@ -188,7 +186,7 @@ function disp(x) {
     if (window.currentcontent == 'content-1') {
         window.currentcontent = 'content-2';
         $("#content-2").html(x);
-        $("#content-1").fadeOut(400);
+        $("#content-1").fadeOut(400, function() { $("#content-1").html("Shouldn't see this (c1)");});
         $("#content-2").fadeIn(400);
         var nh = $("#content-2").height()+200;
         if (nh < $(window).height() - 30) {
@@ -198,13 +196,13 @@ function disp(x) {
     } else {
         window.currentcontent = 'content-1';
         $("#content-1").html(x);
-        $("#content-2").fadeOut(400);
-        $("#content-1").fadeIn(400);
         var nh = $("#content-1").height()+200;
         if (nh < $(window).height() - 30) {
             nh = $(window).height() - 30;
         }
         $("body").css({ "height" : nh });
+        $("#content-2").fadeOut(400, function() { $("#content-2").html("Shouldn't see this (c2)");});
+        $("#content-1").fadeIn(400);
     }
 }
 
